@@ -13,9 +13,8 @@
         android:theme="@style/Theme.ComposeDemos"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.main.MainActivity"
             android:exported="true"
-            android:label="@string/title_activity_main"
             android:theme="@style/Theme.ComposeDemos">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
