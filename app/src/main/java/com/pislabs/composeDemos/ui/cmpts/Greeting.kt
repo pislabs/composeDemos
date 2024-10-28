@@ -1,5 +1,6 @@
 package com.pislabs.composeDemos.ui.cmpts
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -17,9 +18,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -30,12 +33,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ImageAspectRatio
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -50,15 +58,27 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,31 +111,101 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.pislabs.composeDemos.R
 import com.pislabs.composeDemos.ui.theme.ComposeDemosTheme
+import kotlinx.coroutines.launch
 
+data class Item (
+    val name: String,
+    val icon: Int
+)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Box (
-        modifier = modifier.padding(10.dp)
+    val scope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerItems = listOf(Icons.Default.Close, Icons.Default.Clear, Icons.Default.Call)
+    val selectedDrawerItem = remember { mutableStateOf(drawerItems[0]) }
+
+    var selectedItemIndex by remember { mutableIntStateOf(0) }
+    val items = listOf(
+        Item("Home", R.drawable.img_avatar),
+        Item("List", R.drawable.img_avatar),
+        Item("Settings", R.drawable.img_avatar),
+    )
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Spacer(Modifier.height(12.dp))
+                drawerItems.forEach { item ->
+                    NavigationDrawerItem(
+                        icon = { Icon(item, contentDescription = null) },
+                        label = { Text(item.name) },
+                        selected = item == selectedDrawerItem.value,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            selectedDrawerItem.value = item
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                }
+            }
+        }
     ) {
-        Column {
-            GreetingConstraintLayout()
-            Spacer(Modifier.height(5.dp))
-            GreetingLayouts()
-            Spacer(Modifier.height(5.dp))
-            GreetingLayoutRow()
-            Spacer(Modifier.height(5.dp))
-            GreetingDialog()
-            Spacer(Modifier.height(5.dp))
-            GreetingCheckbox()
-            Spacer(Modifier.height(5.dp))
-            GreetingButton()
-            Spacer(Modifier.height(5.dp))
-            GreetingTextField()
-            Spacer(Modifier.height(5.dp))
-            GreetingText()
-            Spacer(Modifier.height(5.dp))
-            GreetingStart(name)
+        Scaffold (
+            modifier = modifier,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Home") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { scope.launch { drawerState.open() } }
+                        ) {
+                            Icon(Icons.Filled.Menu, null)
+                        }
+                    }
+                )
+            },
+            bottomBar = {
+                NavigationBar {
+                    items.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            selected = index == selectedItemIndex,
+                            onClick = { selectedItemIndex = index },
+                            icon = { Icon(painterResource(id = item.icon), null) },
+                            alwaysShowLabel = false,
+                            label = { Text(item.name) }
+                        )
+                    }
+                }
+            }
+        ) { innerPadding ->
+            Box(Modifier.padding(innerPadding).background(Color.LightGray)) {
+                Box (
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Column {
+                        GreetingConstraintLayout()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingLayouts()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingLayoutRow()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingDialog()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingCheckbox()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingButton()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingTextField()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingText()
+                        Spacer(Modifier.height(5.dp))
+                        GreetingStart(name)
+                    }
+                }
+            }
         }
     }
 }
