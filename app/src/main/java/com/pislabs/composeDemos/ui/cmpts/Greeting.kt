@@ -1,6 +1,5 @@
 package com.pislabs.composeDemos.ui.cmpts
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -12,19 +11,20 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -43,6 +43,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -59,7 +62,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
@@ -182,29 +187,97 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             }
         ) { innerPadding ->
             Box(Modifier.padding(innerPadding).background(Color.LightGray)) {
-                Box (
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Column {
-                        GreetingConstraintLayout()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingLayouts()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingLayoutRow()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingDialog()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingCheckbox()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingButton()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingTextField()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingText()
-                        Spacer(Modifier.height(5.dp))
-                        GreetingStart(name)
+                GreetingDemos(name)
+            }
+        }
+    }
+}
+
+@Composable
+fun GreetingDemos(name: String) {
+    Box (
+        modifier = Modifier.padding(10.dp)
+    ) {
+        Column {
+            GreetingList()
+            Spacer(Modifier.height(5.dp))
+            GreetingConstraintLayout()
+            Spacer(Modifier.height(5.dp))
+            GreetingLayouts()
+            Spacer(Modifier.height(5.dp))
+            GreetingLayoutRow()
+            Spacer(Modifier.height(5.dp))
+            GreetingDialog()
+            Spacer(Modifier.height(5.dp))
+            GreetingCheckbox()
+            Spacer(Modifier.height(5.dp))
+            GreetingButton()
+            Spacer(Modifier.height(5.dp))
+            GreetingTextField()
+            Spacer(Modifier.height(5.dp))
+            GreetingText()
+            Spacer(Modifier.height(5.dp))
+            GreetingStart(name)
+        }
+    }
+}
+
+@Composable
+fun GreetingList() {
+    val items = listOf(
+        Item("Home", R.drawable.img_avatar),
+        Item("List", R.drawable.img_avatar),
+        Item("Settings", R.drawable.img_avatar),
+    )
+
+    val menuExpended = remember { mutableStateOf(false) }
+
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(Color.White, shape = RoundedCornerShape(8.dp))
+            .border(1.dp, Color.Green, shape = RoundedCornerShape(8.dp))
+            .padding(10.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            LazyColumn (
+                modifier = Modifier.fillMaxWidth().background(Color.Gray),
+                contentPadding = PaddingValues(10.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                items (items) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box (Modifier.padding(10.dp)) {
+                            Text(it.name)
+                        }
                     }
                 }
+            }
+            Box {
+                GreetingMenu(items, menuExpended.value) { menuExpended.value = false }
+                Button(onClick = { menuExpended.value = true }) {
+                    Text(text = if (menuExpended.value) "关闭菜单" else "打开菜单")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GreetingMenu(
+    options: List<Item>,
+    expended: Boolean,
+    onDismissRequest: () -> Unit
+) {
+    DropdownMenu(
+        expended,
+        onDismissRequest = onDismissRequest,
+    ) {
+        Column {
+            options.forEach { option ->
+                ListItem(headlineContent = { Text(option.name) })
             }
         }
     }
